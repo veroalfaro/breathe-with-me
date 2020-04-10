@@ -1,0 +1,163 @@
+<html>
+
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.sound.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- <script src="path/to/p5.sound.js"></script> -->
+
+  <style>
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  </style>
+
+  <script>
+    var socket = io.connect();
+    var diam = 8;
+    var change = 5.5;
+    var song2;
+    var myData;
+    // var myVolume = 0.5;
+    var v = 0;
+
+    let fontTitles, fontText;
+
+    socket.on('connect', function () {
+      console.log("Connected");
+    });
+
+    socket.on('serialdata', function (data) {
+      console.log(data);
+      myData = data;
+    });
+
+    function preload() {
+      song2 = loadSound("waves.wav");
+      fontTitles = loadFont('PlayfairDisplay-Regular.ttf');
+      fontText = loadFont('OpenSansCondensed-Light.ttf');
+    }
+
+    function setup() {
+      createCanvas(1440, 900);
+      //song2.setVolume(myVolume);
+      //console.log("should be 0.5:", myVolume);
+      song2.loop();
+      smooth(0.5);
+      //let myVolume = map(myData,220, 400,0.0,1.0);
+      //song2.setVolume(myVolume);
+    }
+
+    function draw() {
+
+      // background(38, 62, 71, 40);
+      background(0,0,0, 40);
+
+      fill(217,317,238);
+      textSize(34);
+      textFont(fontTitles);
+      text('Breathe with me', 100, 100);
+
+
+      let a = map(diam, 0, width - 700, 0, 75);
+      let breathing = map(myData, 160, 320, 0, width - 300);
+      console.log("circle:",breathing);
+      console.log(breathing);
+      let a2 = map(myData, 220, 400, 100,0);
+
+      // diameter change
+      diam += change;
+      if (diam > width - 700) {
+        change = -change;
+      } else if (diam < 0) {
+        change = -change;
+      }
+      
+      console.log("hexagon:",diam);
+      
+      if (change > 0) {
+        fill(117,147,149);
+        textFont(fontText);
+        textSize(22);
+        text('Inhale', 225, 400);
+        text('Squeeze', 1160, 400); 
+        let v = map(diam, 0, width - 700, 0, 0.5);
+        song2.setVolume(v);
+
+      } else {
+        fill(117,147,149);
+        textFont(fontText);
+        textSize(22);
+        text('Exhale', 225, 400);
+        text('Release', 1160, 400);        
+        let v = map(diam, width - 700, 0, 0.5, 0);
+        song2.setVolume(v);
+      }
+
+      if (diam>575 && breathing > 575) {
+      strokeWeight(0.3);
+      stroke(117,147,149);
+      fill(117,147,149,2);
+      //noFill();
+      ellipse(width / 2, height / 2, 800,800);
+      ellipse(width / 2, height / 2, 800 + 25,800 +25);
+      ellipse(width / 2, height / 2, 800 + 50,800 +50);
+      }
+
+
+      //Hexagon dictating breathing exercises 
+      strokeWeight(1);
+      fill(82, 230, 203, a2);
+      stroke(82, 230, 203);
+
+      push();
+      translate(width / 2, height / 2);
+      rotate(frameCount / -100.0);
+      polygon(0, 0, diam / 2, 6);
+      //fill(82, 230, 203, 50);
+      fill(82, 230, 203, a);
+      polygon(0, 0, diam / 2 + 25, 6);
+      polygon(0, 0, diam / 2 + 50, 6);
+      pop();
+
+      //Ellipse controlled by stress ball 
+
+      strokeWeight(1);
+      stroke(49,0,255);
+      fill(49,0,255, a2);
+      ellipse(width / 2, height / 2, breathing, breathing);
+      noFill();
+      ellipse(width / 2, height / 2, breathing - 25, breathing - 25);
+      ellipse(width / 2, height / 2, breathing - 50, breathing - 50);
+
+
+
+      //fading rectangle on top
+      strokeWeight(0);
+      //rect(0, 0, 1440, 800);
+
+    }
+
+    function polygon(x, y, radius, npoints) {
+      let angle = TWO_PI / npoints;
+      beginShape();
+      for (let a = 0; a < TWO_PI; a += angle) {
+        let sx = x + cos(a) * radius;
+        let sy = y + sin(a) * radius;
+        vertex(sx, sy);
+      }
+      endShape(CLOSE);
+    }
+
+
+
+  </script>
+</head>
+
+<body>
+</body>
+
+</html>
